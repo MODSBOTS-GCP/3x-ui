@@ -1,12 +1,12 @@
 FROM golang:bullseye AS builder
 ARG XRAY_UI_REPO="https://github.com/MODSBOTS-GCP/3x-ui-c"
 RUN git clone ${XRAY_UI_REPO} --depth=1
-WORKDIR /go/3x-ui
+WORKDIR /go/3x-ui-c
 RUN go build -a -ldflags "-linkmode external -extldflags '-static' -s -w"
 
 FROM alpine
 LABEL org.opencontainers.image.authors="https://github.com/jvdi"
-COPY --from=builder /go/3x-ui/x-ui /usr/local/bin/x-ui
+COPY --from=builder /go/33x-ui-c/x-ui /usr/local/bin/x-ui
 
 ENV TZ=Asia/Tehran
 RUN apk add --no-cache ca-certificates tzdata 
