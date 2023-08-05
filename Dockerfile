@@ -1,49 +1,20 @@
-# ========================================================
-# Stage: Builder
-# ========================================================
 FROM golang:bullseye AS builder
-WORKDIR /app
-ARG TARGETARCH
-ENV CGO_ENABLED=1
+ARG XRAY_UI_REPO="https://github.com/MODSBOTS-GCP/3x-ui"
+RUN git clone ${XRAY_UI_REPO} --depth=1
+WORKDIR /go/xray-ui
+RUN go build -a -ldflags "-linkmode external -extldflags '-static' -s -w"
+
 FROM alpine
-RUN apk --no-cache --update add \
-  build-base \
-  gcc \
-  wget \
-  unzip
+LABEL org.opencontainers.image.authors="https://github.com/jvdi"
+COPY --from=builder /go/xray-ui/3x-ui /usr/local/bin/xray-ui
 
-COPY . .
-
-RUN go build -o build/x-ui main.go
-RUN ./DockerInit.sh "$TARGETARCH"
-
-# ========================================================
-# Stage: Final Image of 3x-ui
-# ========================================================
-FROM alpine
 ENV TZ=Asia/Tehran
-WORKDIR /app
+RUN apk add --no-cache ca-certificates tzdata 
 
-RUN apk add --no-cache --update \
-  ca-certificates \
-  tzdata \
-  fail2ban
+ARG TARGETARCH
+COPY --from=teddysun/xray /usr/bin/xray /usr/local/bin/bin/xray-linux-${TARGETARCH}
+COPY --from=teddysun/xray /usr/share/xray/ /usr/local/bin/bin/
 
-COPY --from=builder  /app/build/ /app/
-COPY --from=builder  /app/DockerEntrypoint.sh /app/
-COPY --from=builder  /app/x-ui.sh /usr/bin/x-ui
-
-# Configure fail2ban
-RUN rm -f /etc/fail2ban/jail.d/alpine-ssh.conf \
-  && cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local \
-  && sed -i "s/^\[ssh\]$/&\nenabled = false/" /etc/fail2ban/jail.local \
-  && sed -i "s/^\[sshd\]$/&\nenabled = false/" /etc/fail2ban/jail.local \
-  && sed -i "s/#allowipv6 = auto/allowipv6 = auto/g" /etc/fail2ban/fail2ban.conf
-
-RUN chmod +x \
-  /app/DockerEntrypoint.sh \
-  /app/x-ui \
-  /usr/bin/x-ui
-
-VOLUME [ "/etc/x-ui" ]
-ENTRYPOINT [ "/app/DockerEntrypoint.sh" ]
+VOLUME [ "/etc/xray-ui" ]
+WORKDIR /usr/local/bin
+CMD [ "xray-ui" ]
