@@ -1,7 +1,7 @@
 FROM golang:bullseye AS builder
 ARG XRAY_UI_REPO="https://github.com/MODSBOTS-GCP/3x-ui"
 RUN git clone ${XRAY_UI_REPO} --depth=1
-WORKDIR /go/xray-ui
+WORKDIR /go/3x-ui
 RUN go build -a -ldflags "-linkmode external -extldflags '-static' -s -w"
 
 FROM alpine
