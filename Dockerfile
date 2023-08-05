@@ -6,7 +6,7 @@ RUN go build -a -ldflags "-linkmode external -extldflags '-static' -s -w"
 
 FROM alpine
 LABEL org.opencontainers.image.authors="https://github.com/jvdi"
-COPY --from=builder /go/33x-ui-c/x-ui /usr/local/bin/x-ui
+COPY --from=builder /go/3x-ui-c/x-ui /usr/local/bin/x-ui
 
 ENV TZ=Asia/Tehran
 RUN apk add --no-cache ca-certificates tzdata 
