@@ -5,7 +5,7 @@ FROM golang:bullseye AS builder
 WORKDIR /app
 ARG TARGETARCH
 ENV CGO_ENABLED=1
-
+FROM alpine
 RUN apk --no-cache --update add \
   build-base \
   gcc \
