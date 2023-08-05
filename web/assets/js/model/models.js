@@ -169,7 +169,7 @@ class AllSetting {
     constructor(data) {
         this.webListen = "";
         this.webDomain = "";
-        this.webPort = 2053;
+        this.webPort = 8080;
         this.webCertFile = "";
         this.webKeyFile = "";
         this.webBasePath = "/";
